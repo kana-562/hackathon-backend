@@ -76,3 +76,14 @@ type AIMessageRepository interface {
 	Create(msg *domain.AIMessage) (int64, error)
 	FindBySession(sessionID int64) ([]domain.AIMessage, error)
 }
+
+type DMRepository interface {
+	GetOrCreateRoom(user1ID, user2ID int64, setID *int64) (*domain.DMRoom, error)
+	FindRoomByID(roomID int64) (*domain.DMRoom, error)
+	FindRoomsByUser(userID int64) ([]domain.DMRoom, error)
+	CreateMessage(msg *domain.DMMessage) (int64, error)
+	FindMessages(roomID int64) ([]domain.DMMessage, error)
+	MarkRead(roomID, readerID int64) error
+	CountUnread(roomID, readerID int64) (int, error)
+	UpdateLastMessage(roomID int64, body string) error
+}

@@ -186,6 +186,37 @@ type SetQuestionResponse struct {
 	Message string `json:"message"`
 }
 
+// DM
+type GetOrCreateRoomRequest struct {
+	PartnerID int64  `json:"partnerId"`
+	SetID     *int64 `json:"setId"`
+}
+type GetOrCreateRoomResponse struct {
+	RoomID int64 `json:"roomId"`
+}
+type DMRoomResponse struct {
+	ID            int64      `json:"id"`
+	PartnerID     int64      `json:"partnerId"`
+	PartnerName   string     `json:"partnerName"`
+	PartnerAvatar string     `json:"partnerAvatar"`
+	SetID         *int64     `json:"setId"`
+	SetTitle      string     `json:"setTitle"`
+	LastMessage   string     `json:"lastMessage"`
+	LastMessageAt *string    `json:"lastMessageAt"`
+	UnreadCount   int        `json:"unreadCount"`
+}
+type DMMessageResponse struct {
+	ID        int64  `json:"id"`
+	RoomID    int64  `json:"roomId"`
+	SenderID  int64  `json:"senderId"`
+	Body      string `json:"body"`
+	IsRead    bool   `json:"isRead"`
+	CreatedAt string `json:"createdAt"`
+}
+type SendDMRequest struct {
+	Body string `json:"body"`
+}
+
 // MyPage
 type MyPageResponse struct {
 	User           UserResponse `json:"user"`

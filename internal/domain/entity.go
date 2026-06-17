@@ -144,3 +144,23 @@ type StartPlanStep struct {
 	Title       string `json:"title"`
 	Body        string `json:"body"`
 }
+
+type DMRoom struct {
+	ID            int64      `json:"id"`
+	User1ID       int64      `json:"user1Id"`
+	User2ID       int64      `json:"user2Id"`
+	SetID         *int64     `json:"setId"`
+	LastMessage   string     `json:"lastMessage"`
+	LastMessageAt *time.Time `json:"lastMessageAt"`
+	CreatedAt     time.Time  `json:"createdAt"`
+	UpdatedAt     time.Time  `json:"updatedAt"`
+}
+
+type DMMessage struct {
+	ID        int64     `json:"id"`
+	RoomID    int64     `json:"roomId"`
+	SenderID  int64     `json:"senderId"`
+	Body      string    `json:"body"`
+	IsRead    bool      `json:"isRead"`
+	CreatedAt time.Time `json:"createdAt"`
+}

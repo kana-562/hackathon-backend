@@ -41,6 +41,7 @@ func main() {
 	startPlanRepo := mysql.NewStartPlanRepository(db)
 	sessionRepo := mysql.NewAIChatSessionRepository(db)
 	messageRepo := mysql.NewAIMessageRepository(db)
+	dmRepo := mysql.NewDMRepository(db)
 
 	// Usecases
 	authUC := usecase.NewAuthUsecase(userRepo, cfg.JWTSecret)
@@ -49,6 +50,7 @@ func main() {
 	sellUC := usecase.NewSellUsecase(setRepo, sessionRepo, messageRepo, aiClient)
 	txUC := usecase.NewTransactionUsecase(txRepo, setRepo, startPlanRepo, aiClient)
 	mypageUC := usecase.NewMypageUsecase(userRepo, setRepo, txRepo, favoriteRepo)
+	dmUC := usecase.NewDMUsecase(dmRepo, userRepo, setRepo)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authUC)
@@ -57,6 +59,7 @@ func main() {
 	sellH := handler.NewSellHandler(sellUC)
 	txH := handler.NewTransactionHandler(txUC)
 	mypageH := handler.NewMypageHandler(mypageUC)
+	dmH := handler.NewDMHandler(dmUC)
 
 	e := echo.New()
 	e.HideBanner = true
@@ -104,6 +107,13 @@ func main() {
 	api.GET("/mypage/selling", mypageH.GetSelling, jwtRequired)
 	api.GET("/mypage/purchases", mypageH.GetPurchases, jwtRequired)
 	api.GET("/mypage/favorites", mypageH.GetFavorites, jwtRequired)
+
+	// DM
+	api.POST("/dm/rooms", dmH.GetOrCreateRoom, jwtRequired)
+	api.GET("/dm/rooms", dmH.ListRooms, jwtRequired)
+	api.GET("/dm/rooms/:id/messages", dmH.GetMessages, jwtRequired)
+	api.POST("/dm/rooms/:id/messages", dmH.SendMessage, jwtRequired)
+	api.PATCH("/dm/rooms/:id/read", dmH.MarkRead, jwtRequired)
 
 	log.Printf("Starting server on port %s", cfg.Port)
 	e.Logger.Fatal(e.Start(":" + cfg.Port))
