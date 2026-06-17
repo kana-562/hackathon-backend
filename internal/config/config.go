@@ -29,7 +29,7 @@ func Load() *Config {
 		JWTSecret:      getEnv("JWT_SECRET", "dev-secret-change-me"),
 		FrontendOrigin: getEnv("FRONTEND_ORIGIN", "http://localhost:5173"),
 		AIAPIKey:       getEnv("AI_API_KEY", ""),
-		AIModel:        getEnv("AI_MODEL", "claude-sonnet-4-6"),
+		AIModel:        getEnv("AI_MODEL", "gemini-2.0-flash"),
 		Port:           getEnv("PORT", "8080"),
 	}
 }
