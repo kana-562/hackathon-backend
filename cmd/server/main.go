@@ -26,8 +26,8 @@ func main() {
 	// AI client
 	var aiClient ai.Client
 	if cfg.AIAPIKey != "" {
-		log.Printf("Using OpenAI client (model: %s)", cfg.AIModel)
-		aiClient = ai.NewOpenAIClient(cfg.AIAPIKey, cfg.AIModel)
+		log.Printf("Using Gemini client (model: %s)", cfg.AIModel)
+		aiClient = ai.NewGeminiClient(cfg.AIAPIKey, cfg.AIModel)
 	} else {
 		aiClient = ai.NewMockClient()
 	}
