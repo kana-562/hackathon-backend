@@ -45,7 +45,7 @@ func main() {
 
 	// Usecases
 	authUC := usecase.NewAuthUsecase(userRepo, cfg.JWTSecret)
-	homeUC := usecase.NewHomeUsecase(categoryRepo, setRepo)
+	homeUC := usecase.NewHomeUsecase(categoryRepo, setRepo, favoriteRepo)
 	setsUC := usecase.NewSetsUsecase(setRepo, favoriteRepo, aiClient)
 	sellUC := usecase.NewSellUsecase(setRepo, sessionRepo, messageRepo, aiClient)
 	txUC := usecase.NewTransactionUsecase(txRepo, setRepo, startPlanRepo, aiClient)

@@ -13,10 +13,11 @@ type HomeUsecase interface {
 type homeUsecase struct {
 	categoryRepo repository.CategoryRepository
 	setRepo      repository.SetRepository
+	favoriteRepo repository.FavoriteRepository
 }
 
-func NewHomeUsecase(categoryRepo repository.CategoryRepository, setRepo repository.SetRepository) HomeUsecase {
-	return &homeUsecase{categoryRepo: categoryRepo, setRepo: setRepo}
+func NewHomeUsecase(categoryRepo repository.CategoryRepository, setRepo repository.SetRepository, favoriteRepo repository.FavoriteRepository) HomeUsecase {
+	return &homeUsecase{categoryRepo: categoryRepo, setRepo: setRepo, favoriteRepo: favoriteRepo}
 }
 
 func (u *homeUsecase) GetHome(userID int64) (*domain.HomeResponse, error) {
@@ -46,18 +47,27 @@ func (u *homeUsecase) GetHome(userID int64) (*domain.HomeResponse, error) {
 		return nil, err
 	}
 
+	// Build favorite set ID map once (single DB query) for isFavorite checks
+	favSetIDs := make(map[int64]bool)
+	if userID > 0 {
+		if favSets, err := u.setRepo.FindFavorites(userID); err == nil {
+			for _, s := range favSets {
+				favSetIDs[s.ID] = true
+			}
+		}
+	}
+
 	featuredCards := make([]domain.StarterSetCard, 0, len(featuredSets))
 	for _, s := range featuredSets {
 		card := toSetCard(s)
-		if userID > 0 {
-			// isFavorite check could be added here
-		}
+		card.IsFavorite = favSetIDs[s.ID]
 		featuredCards = append(featuredCards, card)
 	}
 
 	newCards := make([]domain.StarterSetCard, 0, len(newSets))
 	for _, s := range newSets {
 		card := toSetCard(s)
+		card.IsFavorite = favSetIDs[s.ID]
 		newCards = append(newCards, card)
 	}
 
