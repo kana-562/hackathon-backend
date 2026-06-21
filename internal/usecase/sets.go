@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"strings"
 
 	"hobby-relay-backend/internal/ai"
 	"hobby-relay-backend/internal/domain"
@@ -72,6 +73,20 @@ func (u *setsUsecase) Search(query domain.SearchQuery, userID int64) (*domain.Se
 		}
 		cards = append(cards, card)
 	}
+	// Safety: in-memory keyword filter in case DB LIKE doesn't apply
+	if query.Q != "" && !query.Smart {
+		lowerQ := strings.ToLower(query.Q)
+		filtered := make([]domain.StarterSetCard, 0, len(cards))
+		for _, card := range cards {
+			if strings.Contains(strings.ToLower(card.Title), lowerQ) ||
+				strings.Contains(strings.ToLower(card.HobbyName), lowerQ) ||
+				strings.Contains(strings.ToLower(card.CategoryName), lowerQ) {
+				filtered = append(filtered, card)
+			}
+		}
+		cards = filtered
+	}
+
 	resp.Sets = cards
 	return resp, nil
 }
