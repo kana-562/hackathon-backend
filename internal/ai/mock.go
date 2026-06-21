@@ -64,8 +64,13 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 		items := generateItems(hobbyText)
 		recommended := generateRecommended(hobbyText)
 
+		summary := "このセットだけですぐに始められます。必要なものがすべて揃っているので、届いた日から楽しめます。"
+		if hobbyText != "" {
+			summary = fmt.Sprintf("このセットだけで%sをすぐに始められます。必要なものがすべて揃っているので、届いた日から楽しめます。", hobbyText)
+		}
+
 		return &ListingSupportResult{
-			Message:           fmt.Sprintf("セット情報の入力が完了しました！「%s」のスターターセットの出品準備ができています。内容を確認して出品してください。", title),
+			Message:           fmt.Sprintf("セット情報の入力が完了しました！「%s」の出品準備ができています。内容を確認して出品してください。", title),
 			SuggestedChips:    []string{},
 			Progress:          domain.ProgressDTO{Current: 5, Total: 5},
 			Done:              true,
@@ -77,7 +82,7 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 			BeginnerScore:     4,
 			ReadinessScore:    85,
 			PreviousOwnerNote: extractLastUserMessage(sessionMessages),
-			StartableSummary:  fmt.Sprintf("このセットだけで%sをすぐに始められます。必要なものがすべて揃っているので、届いた日から楽しめます。", hobbyText),
+			StartableSummary:  summary,
 		}, nil
 	}
 }
@@ -340,17 +345,35 @@ func countUserMessages(messages []SessionMessage) int {
 func extractHobbyFromMessages(messages []SessionMessage) string {
 	for _, m := range messages {
 		if m.Sender == "system" {
-			// Extract hobby from system message
-			parts := strings.Split(m.Message, "「")
-			if len(parts) > 1 {
-				parts2 := strings.Split(parts[1], "」")
-				if len(parts2) > 0 {
-					return parts2[0]
+			// Format: "趣味: hobbyText"
+			if strings.HasPrefix(m.Message, "趣味:") || strings.HasPrefix(m.Message, "趣味：") {
+				parts := strings.SplitN(m.Message, ":", 2)
+				if len(parts) == 2 {
+					hobby := strings.TrimSpace(parts[1])
+					if hobby != "" {
+						return hobby
+					}
+				}
+				// full-width colon fallback
+				parts2 := strings.SplitN(m.Message, "：", 2)
+				if len(parts2) == 2 {
+					hobby := strings.TrimSpace(parts2[1])
+					if hobby != "" {
+						return hobby
+					}
+				}
+			}
+			// Quoted format: 「hobbyText」
+			qparts := strings.Split(m.Message, "「")
+			if len(qparts) > 1 {
+				qparts2 := strings.Split(qparts[1], "」")
+				if len(qparts2) > 0 && qparts2[0] != "" {
+					return qparts2[0]
 				}
 			}
 		}
 	}
-	return "趣味"
+	return ""
 }
 
 func extractFirstUserMessage(messages []SessionMessage) string {
@@ -373,14 +396,44 @@ func extractLastUserMessage(messages []SessionMessage) string {
 }
 
 func generateTitle(hobbyText string, itemsText string) string {
-	if hobbyText == "" {
-		hobbyText = "趣味"
+	titleMap := map[string]string{
+		"ギター":   "アコギ入門セット",
+		"コーヒー": "ハンドドリップコーヒーセット",
+		"釣り":    "釣り入門スターターセット",
+		"キャンプ": "キャンプスターターセット",
+		"ヨガ":    "ヨガ入門セット",
+		"イラスト": "イラスト道具セット",
+		"ウクレレ": "ウクレレ入門セット",
+		"カメラ":  "カメラスターターセット",
 	}
-	return fmt.Sprintf("%s スターターセット一式", hobbyText)
+	for key, title := range titleMap {
+		if strings.Contains(hobbyText, key) {
+			return title
+		}
+	}
+	if hobbyText != "" {
+		return fmt.Sprintf("%s スターターセット", hobbyText)
+	}
+	return "スターターセット一式"
 }
 
-func generateDescription(hobbyText string, itemsText string) string {
-	return fmt.Sprintf("%sを始めるのに必要なものが揃ったセットです。%s\n\n丁寧に使用していたため、状態は良好です。初心者の方でもすぐに始められるよう、基本アイテムをすべて揃えています。", hobbyText, itemsText)
+func generateDescription(hobbyText string, _ string) string {
+	descMap := map[string]string{
+		"ギター":   "アコースティックギターを始めるのに必要な道具を一式揃えたセットです。チューニングからコードの練習まで、届いたその日から練習を始められます。初心者の方でも安心してスタートできる内容です。",
+		"コーヒー": "ハンドドリップコーヒーを自宅で楽しむためのスターターセットです。器具をすべて揃えているので、届いたその日から本格的なコーヒーを淹れることができます。",
+		"釣り":    "釣りを始めるために必要な基本道具を揃えたセットです。ロッドからリールまですぐに使える状態でお届けします。",
+		"キャンプ": "ソロキャンプデビューに必要なアイテムを揃えたセットです。テント設営から調理まで、これだけで最初のキャンプを楽しめます。",
+		"ヨガ":    "自宅でヨガを始めるためのスターターセットです。マットとサポートグッズが揃っているので、すぐに練習を開始できます。",
+	}
+	for key, desc := range descMap {
+		if strings.Contains(hobbyText, key) {
+			return desc
+		}
+	}
+	if hobbyText != "" {
+		return fmt.Sprintf("%sを始めるのに必要なものが揃ったセットです。丁寧に使用していたため状態は良好です。初心者の方でもすぐに始められる内容になっています。", hobbyText)
+	}
+	return "趣味を始めるのに必要なものが揃ったセットです。丁寧に使用していたため状態は良好です。"
 }
 
 func generateItems(hobbyText string) []ItemInput {
