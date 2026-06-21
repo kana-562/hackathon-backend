@@ -18,6 +18,7 @@ type CategoryRepository interface {
 }
 
 type SetFilter struct {
+	Q                 string
 	CategoryID        int64
 	HobbyID           int64
 	Status            string

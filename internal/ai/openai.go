@@ -252,8 +252,7 @@ func (c *OpenAIClient) AnswerSetQuestion(ctx SetQuestionContext, userMessage str
 【趣味】%s
 【価格】¥%s
 【新品相場】¥%s
-【初心者向けスコア】%d/5
-【すぐ始めやすさ】%d/100
+【セット充実度】%d/100
 【説明】%s
 【前の持ち主より】%s
 【セット内容】
@@ -263,7 +262,7 @@ func (c *OpenAIClient) AnswerSetQuestion(ctx SetQuestionContext, userMessage str
 
 回答は必ず商品情報を参照してください。情報にないことは「出品者にお問い合わせください」と一言添えてください。`,
 		ctx.Title, ctx.HobbyName, fmtPrice(ctx.Price), fmtPrice(ctx.EstimatedNewPrice),
-		ctx.BeginnerScore, ctx.ReadinessScore,
+		ctx.ReadinessScore,
 		ctx.Description, ctx.PreviousOwnerNote,
 		strings.Join(itemLines, "\n"), strings.Join(recLines, "\n"))
 

@@ -65,6 +65,11 @@ func (r *setRepository) FindAll(filter repository.SetFilter) ([]domain.StarterSe
 		conditions = append(conditions, "s.seller_id = ?")
 		args = append(args, filter.SellerID)
 	}
+	if filter.Q != "" {
+		like := "%" + filter.Q + "%"
+		conditions = append(conditions, "(s.title LIKE ? OR h.name LIKE ? OR s.description LIKE ?)")
+		args = append(args, like, like, like)
+	}
 
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")

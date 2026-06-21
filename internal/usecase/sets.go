@@ -29,6 +29,7 @@ func NewSetsUsecase(setRepo repository.SetRepository, favoriteRepo repository.Fa
 
 func (u *setsUsecase) Search(query domain.SearchQuery, userID int64) (*domain.SearchResponse, error) {
 	filter := repository.SetFilter{
+		Q:                 query.Q,
 		Status:            domain.SetStatusOnSale,
 		CategoryID:        query.CategoryID,
 		HobbyID:           query.HobbyID,

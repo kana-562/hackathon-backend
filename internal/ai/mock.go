@@ -87,19 +87,13 @@ func (m *MockClient) AnswerSetQuestion(ctx SetQuestionContext, userMessage strin
 
 	// 初心者・難易度
 	if contains(msg, "初心者", "難しい", "大丈夫", "できる", "始められる") {
-		level := "普通"
-		if ctx.BeginnerScore >= 5 {
-			level = "とても初心者向け"
-		} else if ctx.BeginnerScore >= 4 {
-			level = "初心者向け"
-		} else if ctx.BeginnerScore <= 2 {
-			level = "やや上級者向け"
-		}
 		note := ""
 		if ctx.StartableSummary != "" {
 			note = " " + ctx.StartableSummary
+		} else if ctx.ReadinessScore >= 80 {
+			note = " 届いたその日から始められる内容が揃っています。"
 		}
-		return fmt.Sprintf("「%s」の難易度は%s（初心者スコア %d/5）です。%s", ctx.Title, level, ctx.BeginnerScore, note), nil
+		return fmt.Sprintf("「%s」は初心者の方でも大丈夫なセットです。%s", ctx.Title, note), nil
 	}
 
 	// 価格・新品との比較
