@@ -31,6 +31,26 @@ type RecommendedInput struct {
 	Reason     string
 }
 
+type SetQuestionContext struct {
+	Title             string
+	Description       string
+	Price             int
+	BeginnerScore     int
+	ReadinessScore    int
+	EstimatedNewPrice int
+	PreviousOwnerNote string
+	StartableSummary  string
+	HobbyName         string
+	Items             []SetItemContext
+	RecommendedItems  []RecommendedInput
+}
+
+type SetItemContext struct {
+	Name      string
+	Condition string
+	Essential bool
+}
+
 type SearchInterpretation struct {
 	SmartMessage      string
 	RelatedHobbies    []string
@@ -42,7 +62,7 @@ type SearchInterpretation struct {
 type Client interface {
 	StartListingSupport(hobbyText string) (*ListingSupportResult, error)
 	NextListingStep(sessionMessages []SessionMessage, userMessage string) (*ListingSupportResult, error)
-	AnswerSetQuestion(setTitle string, items []string, userMessage string) (string, error)
+	AnswerSetQuestion(ctx SetQuestionContext, userMessage string) (string, error)
 	InterpretSearchQuery(query string) (*SearchInterpretation, error)
 	GenerateStartPlan(setTitle string, hobbyName string) ([]domain.StartPlanStepDTO, error)
 }

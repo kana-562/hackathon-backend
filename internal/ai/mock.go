@@ -82,27 +82,148 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 	}
 }
 
-func (m *MockClient) AnswerSetQuestion(setTitle string, items []string, userMessage string) (string, error) {
-	lowerMsg := strings.ToLower(userMessage)
+func (m *MockClient) AnswerSetQuestion(ctx SetQuestionContext, userMessage string) (string, error) {
+	msg := userMessage
 
-	if strings.Contains(lowerMsg, "送料") || strings.Contains(userMessage, "送料") {
-		return "送料は出品者が別途設定しています。取引メッセージでご確認ください。", nil
-	}
-	if strings.Contains(userMessage, "状態") || strings.Contains(userMessage, "コンディション") {
-		return fmt.Sprintf("「%s」のセット内アイテムの状態は商品詳細ページに記載されています。ご不明な点は出品者にメッセージでお問い合わせください。", setTitle), nil
-	}
-	if strings.Contains(userMessage, "初心者") {
-		return fmt.Sprintf("「%s」は初心者スコアが高く、入門者の方にも安心してお使いいただけます。セットには基本アイテムがすべて含まれています。", setTitle), nil
-	}
-	if strings.Contains(userMessage, "付属") || strings.Contains(userMessage, "含まれ") {
-		itemList := strings.Join(items, "、")
-		if itemList == "" {
-			itemList = "詳細は商品ページをご覧ください"
+	// 初心者・難易度
+	if contains(msg, "初心者", "難しい", "大丈夫", "できる", "始められる") {
+		level := "普通"
+		if ctx.BeginnerScore >= 5 {
+			level = "とても初心者向け"
+		} else if ctx.BeginnerScore >= 4 {
+			level = "初心者向け"
+		} else if ctx.BeginnerScore <= 2 {
+			level = "やや上級者向け"
 		}
-		return fmt.Sprintf("このセットには「%s」などが含まれています。", itemList), nil
+		note := ""
+		if ctx.StartableSummary != "" {
+			note = " " + ctx.StartableSummary
+		}
+		return fmt.Sprintf("「%s」の難易度は%s（初心者スコア %d/5）です。%s", ctx.Title, level, ctx.BeginnerScore, note), nil
 	}
 
-	return fmt.Sprintf("「%s」についてのご質問ありがとうございます。詳しくは出品者に直接メッセージでお問い合わせいただくことをお勧めします。", setTitle), nil
+	// 価格・新品との比較
+	if contains(msg, "安い", "新品", "価格", "値段", "お得") {
+		if ctx.EstimatedNewPrice > 0 {
+			diff := ctx.EstimatedNewPrice - ctx.Price
+			pct := diff * 100 / ctx.EstimatedNewPrice
+			return fmt.Sprintf("新品で揃えると約¥%s相当のところ、このセットは¥%sです。約%d%%お得（¥%s節約）になります。",
+				fmtPrice(ctx.EstimatedNewPrice), fmtPrice(ctx.Price), pct, fmtPrice(diff)), nil
+		}
+		return fmt.Sprintf("「%s」は¥%sで出品中です。新品より大幅にお得にスタートできます。", ctx.Title, fmtPrice(ctx.Price)), nil
+	}
+
+	// 状態・コンディション
+	if contains(msg, "状態", "コンディション", "傷", "汚れ", "使用感") {
+		if len(ctx.Items) == 0 {
+			return "セット内アイテムの状態は商品詳細ページに記載されています。", nil
+		}
+		var parts []string
+		for _, item := range ctx.Items {
+			if item.Essential {
+				label := conditionLabel(item.Condition)
+				parts = append(parts, fmt.Sprintf("%s：%s", item.Name, label))
+			}
+		}
+		if len(parts) == 0 {
+			return "商品詳細ページで各アイテムの状態をご確認いただけます。", nil
+		}
+		return fmt.Sprintf("主なアイテムの状態です。%s。詳細は商品ページをご覧ください。", strings.Join(parts, "／")), nil
+	}
+
+	// 何が含まれているか
+	if contains(msg, "含まれ", "付属", "セット内容", "何が入", "一覧") {
+		if len(ctx.Items) > 0 {
+			var names []string
+			for _, item := range ctx.Items {
+				names = append(names, item.Name)
+			}
+			return fmt.Sprintf("このセットには「%s」が含まれています。", strings.Join(names, "、")), nil
+		}
+		return "セット内容は商品詳細ページをご確認ください。", nil
+	}
+
+	// 追加で必要なもの
+	if contains(msg, "必要", "他に", "追加", "買い足") {
+		if len(ctx.RecommendedItems) > 0 {
+			var names []string
+			for _, r := range ctx.RecommendedItems {
+				names = append(names, r.Name)
+			}
+			return fmt.Sprintf("追加であると安心なアイテムとして「%s」などが挙げられます。", strings.Join(names, "、")), nil
+		}
+		return "このセットだけで始めるのに十分な内容が揃っています。", nil
+	}
+
+	// すぐ始められるか
+	if contains(msg, "すぐ", "今日から", "いつから", "どれくらい") {
+		if ctx.ReadinessScore >= 90 {
+			return fmt.Sprintf("「%s」はすぐに始めやすさスコアが%d/100と非常に高く、届いたその日から始められます。", ctx.Title, ctx.ReadinessScore), nil
+		} else if ctx.ReadinessScore >= 75 {
+			return fmt.Sprintf("「%s」のすぐに始めやすさスコアは%d/100です。少し準備が必要な部分もありますが、すぐに使い始められます。", ctx.Title, ctx.ReadinessScore), nil
+		}
+		return fmt.Sprintf("「%s」のすぐに始めやすさスコアは%d/100です。一部追加で準備が必要なアイテムがあります。", ctx.Title, ctx.ReadinessScore), nil
+	}
+
+	// 前の持ち主のコメント
+	if contains(msg, "使用感", "使ってた", "前の人", "出品者", "どんな人") {
+		if ctx.PreviousOwnerNote != "" {
+			return fmt.Sprintf("前の持ち主より：「%s」", ctx.PreviousOwnerNote), nil
+		}
+	}
+
+	// 送料
+	if contains(msg, "送料") {
+		return "送料は取引成立後に出品者とご相談ください。", nil
+	}
+
+	// デフォルト：セットの説明を使う
+	if ctx.Description != "" {
+		// 説明文の先頭80文字程度を使う
+		desc := ctx.Description
+		if len([]rune(desc)) > 80 {
+			runes := []rune(desc)
+			desc = string(runes[:80]) + "…"
+		}
+		return fmt.Sprintf("%s ご不明な点があればお気軽にどうぞ。", desc), nil
+	}
+	return fmt.Sprintf("「%s」についてのご質問ありがとうございます。詳細は商品ページをご確認いただくか、出品者にメッセージでお問い合わせください。", ctx.Title), nil
+}
+
+func contains(s string, keywords ...string) bool {
+	for _, k := range keywords {
+		if strings.Contains(s, k) {
+			return true
+		}
+	}
+	return false
+}
+
+func conditionLabel(c string) string {
+	switch c {
+	case "new":
+		return "新品"
+	case "like_new":
+		return "ほぼ新品"
+	case "good":
+		return "良好"
+	case "fair":
+		return "やや使用感あり"
+	default:
+		return "状態不明"
+	}
+}
+
+func fmtPrice(p int) string {
+	s := fmt.Sprintf("%d", p)
+	result := ""
+	for i, c := range s {
+		if i > 0 && (len(s)-i)%3 == 0 {
+			result += ","
+		}
+		result += string(c)
+	}
+	return result
 }
 
 func (m *MockClient) InterpretSearchQuery(query string) (*SearchInterpretation, error) {

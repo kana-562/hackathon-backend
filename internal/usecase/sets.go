@@ -203,10 +203,31 @@ func (u *setsUsecase) AskQuestion(setID int64, userMsg string) (string, error) {
 		return "", errors.New("set not found")
 	}
 
-	itemNames := make([]string, 0, len(set.Items))
+	ctx := ai.SetQuestionContext{
+		Title:             set.Title,
+		Description:       set.Description,
+		Price:             set.Price,
+		BeginnerScore:     set.BeginnerScore,
+		ReadinessScore:    set.ReadinessScore,
+		EstimatedNewPrice: set.EstimatedNewPrice,
+		PreviousOwnerNote: set.PreviousOwnerNote,
+		StartableSummary:  set.StartableSummary,
+		HobbyName:         "",
+	}
 	for _, item := range set.Items {
-		itemNames = append(itemNames, item.Name)
+		ctx.Items = append(ctx.Items, ai.SetItemContext{
+			Name:      item.Name,
+			Condition: string(item.ConditionLabel),
+			Essential: item.IsEssential,
+		})
+	}
+	for _, r := range set.RecommendedItems {
+		ctx.RecommendedItems = append(ctx.RecommendedItems, ai.RecommendedInput{
+			Name:       r.Name,
+			Importance: string(r.Importance),
+			Reason:     r.Reason,
+		})
 	}
 
-	return u.aiClient.AnswerSetQuestion(set.Title, itemNames, userMsg)
+	return u.aiClient.AnswerSetQuestion(ctx, userMsg)
 }

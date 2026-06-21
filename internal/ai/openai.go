@@ -234,19 +234,45 @@ importanceは: required, recommended, nice_to_have のいずれか`, history)
 	}, nil
 }
 
-func (c *OpenAIClient) AnswerSetQuestion(setTitle string, items []string, userMessage string) (string, error) {
-	itemList := strings.Join(items, "、")
+func (c *OpenAIClient) AnswerSetQuestion(ctx SetQuestionContext, userMessage string) (string, error) {
+	var itemLines []string
+	for _, item := range ctx.Items {
+		cond := item.Condition
+		itemLines = append(itemLines, fmt.Sprintf("  - %s（状態：%s）", item.Name, cond))
+	}
+	var recLines []string
+	for _, r := range ctx.RecommendedItems {
+		recLines = append(recLines, fmt.Sprintf("  - %s（%s）", r.Name, r.Reason))
+	}
+
+	systemPrompt := fmt.Sprintf(`あなたはフリマアプリ「ホビーリレー」の商品について質問に答えるAIアシスタントです。
+以下の商品情報をもとに、ユーザーの質問に2〜3文で簡潔・親しみやすく日本語で答えてください。
+
+【商品名】%s
+【趣味】%s
+【価格】¥%s
+【新品相場】¥%s
+【初心者向けスコア】%d/5
+【すぐ始めやすさ】%d/100
+【説明】%s
+【前の持ち主より】%s
+【セット内容】
+%s
+【追加であると安心なもの】
+%s
+
+回答は必ず商品情報を参照してください。情報にないことは「出品者にお問い合わせください」と一言添えてください。`,
+		ctx.Title, ctx.HobbyName, fmtPrice(ctx.Price), fmtPrice(ctx.EstimatedNewPrice),
+		ctx.BeginnerScore, ctx.ReadinessScore,
+		ctx.Description, ctx.PreviousOwnerNote,
+		strings.Join(itemLines, "\n"), strings.Join(recLines, "\n"))
+
 	msg, err := c.chat([]openai.ChatCompletionMessage{
-		{
-			Role: openai.ChatMessageRoleSystem,
-			Content: fmt.Sprintf(`あなたはフリマアプリの商品「%s」についての質問に答えるAIです。
-このセットには: %s が含まれています。
-短く（2〜3文以内）、親しみやすいトーンで日本語で答えてください。`, setTitle, itemList),
-		},
+		{Role: openai.ChatMessageRoleSystem, Content: systemPrompt},
 		{Role: openai.ChatMessageRoleUser, Content: userMessage},
 	})
 	if err != nil {
-		return NewMockClient().AnswerSetQuestion(setTitle, items, userMessage)
+		return NewMockClient().AnswerSetQuestion(ctx, userMessage)
 	}
 	return msg, nil
 }

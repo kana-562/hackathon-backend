@@ -494,8 +494,8 @@ func (m *MockAIClientControlled) NextListingStep(sessionMessages []ai.SessionMes
 	}, nil
 }
 
-func (m *MockAIClientControlled) AnswerSetQuestion(setTitle string, _ []string, _ string) (string, error) {
-	return "こちらは" + setTitle + "に関する回答です。", nil
+func (m *MockAIClientControlled) AnswerSetQuestion(ctx ai.SetQuestionContext, _ string) (string, error) {
+	return "こちらは" + ctx.Title + "に関する回答です。", nil
 }
 
 func (m *MockAIClientControlled) InterpretSearchQuery(query string) (*ai.SearchInterpretation, error) {
