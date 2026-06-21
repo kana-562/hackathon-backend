@@ -80,7 +80,7 @@ func (c *OpenAIClient) StartListingSupport(hobbyText string) (*ListingSupportRes
 	return &ListingSupportResult{
 		Message:        msg,
 		SuggestedChips: chips,
-		Progress:       domain.ProgressDTO{Current: 1, Total: 5},
+		Progress:       domain.ProgressDTO{Current: 1, Total: 4},
 		Done:           false,
 	}, nil
 }
@@ -140,7 +140,7 @@ func (c *OpenAIClient) NextListingStep(sessionMessages []SessionMessage, userMes
 	return &ListingSupportResult{
 		Message:        msg,
 		SuggestedChips: chips,
-		Progress:       domain.ProgressDTO{Current: step, Total: 5},
+		Progress:       domain.ProgressDTO{Current: step, Total: 4},
 		Done:           false,
 	}, nil
 }
@@ -220,7 +220,7 @@ importanceは: required, recommended, nice_to_have のいずれか`, history)
 	return &ListingSupportResult{
 		Message:           "出品内容を作成しました。確認画面へ進みます。",
 		SuggestedChips:    []string{},
-		Progress:          domain.ProgressDTO{Current: 5, Total: 5},
+		Progress:          domain.ProgressDTO{Current: 4, Total: 4},
 		Done:              true,
 		Title:             result.Title,
 		Description:       result.Description,

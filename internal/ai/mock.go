@@ -18,7 +18,7 @@ func (m *MockClient) StartListingSupport(hobbyText string) (*ListingSupportResul
 	return &ListingSupportResult{
 		Message:        fmt.Sprintf("「%s」のスターターセットを出品しましょう！まず、セットに含まれるアイテムを教えてください。どんなものが入っていますか？", hobbyText),
 		SuggestedChips: chips,
-		Progress:       domain.ProgressDTO{Current: 1, Total: 5},
+		Progress:       domain.ProgressDTO{Current: 1, Total: 4},
 		Done:           false,
 	}, nil
 }
@@ -33,7 +33,7 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 		return &ListingSupportResult{
 			Message:        "ありがとうございます！それぞれのアイテムの状態を教えてください。全体的にどのくらいの状態ですか？",
 			SuggestedChips: []string{"ほぼ新品", "目立った傷なし", "やや傷あり", "動作未確認"},
-			Progress:       domain.ProgressDTO{Current: 2, Total: 5},
+			Progress:       domain.ProgressDTO{Current: 2, Total: 4},
 			Done:           false,
 		}, nil
 
@@ -42,7 +42,7 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 		return &ListingSupportResult{
 			Message:        "状態を教えていただきありがとうございます。ご希望の販売価格を教えてください。",
 			SuggestedChips: []string{"3000円", "5000円", "8000円", "10000円", "15000円"},
-			Progress:       domain.ProgressDTO{Current: 3, Total: 5},
+			Progress:       domain.ProgressDTO{Current: 3, Total: 4},
 			Done:           false,
 		}, nil
 
@@ -51,7 +51,7 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 		return &ListingSupportResult{
 			Message:        "価格を設定しました。購入者へのメッセージや使用感など、一言添えていただけますか？（任意）",
 			SuggestedChips: []string{"大切に使っていました", "ほぼ未使用です", "初心者でも始めやすいです", "一式揃っています"},
-			Progress:       domain.ProgressDTO{Current: 4, Total: 5},
+			Progress:       domain.ProgressDTO{Current: 4, Total: 4},
 			Done:           false,
 		}, nil
 
@@ -72,7 +72,7 @@ func (m *MockClient) NextListingStep(sessionMessages []SessionMessage, userMessa
 		return &ListingSupportResult{
 			Message:           fmt.Sprintf("セット情報の入力が完了しました！「%s」の出品準備ができています。内容を確認して出品してください。", title),
 			SuggestedChips:    []string{},
-			Progress:          domain.ProgressDTO{Current: 5, Total: 5},
+			Progress:          domain.ProgressDTO{Current: 4, Total: 4},
 			Done:              true,
 			Title:             title,
 			Description:       description,
