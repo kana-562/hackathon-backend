@@ -142,13 +142,14 @@ type DraftDetail struct {
 
 // Update draft
 type UpdateDraftRequest struct {
-	Title             string `json:"title"`
-	Description       string `json:"description"`
-	Price             int    `json:"price"`
-	BeginnerScore     int    `json:"beginnerScore"`
-	ReadinessScore    int    `json:"readinessScore"`
-	StartableSummary  string `json:"startableSummary"`
-	PreviousOwnerNote string `json:"previousOwnerNote"`
+	Title             string       `json:"title"`
+	Description       string       `json:"description"`
+	Price             int          `json:"price"`
+	BeginnerScore     int          `json:"beginnerScore"`
+	ReadinessScore    int          `json:"readinessScore"`
+	StartableSummary  string       `json:"startableSummary"`
+	PreviousOwnerNote string       `json:"previousOwnerNote"`
+	Items             []SetItemDTO `json:"items"`
 }
 
 // Transaction

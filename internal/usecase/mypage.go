@@ -105,7 +105,9 @@ func (u *mypageUsecase) GetSelling(userID int64) ([]domain.StarterSetCard, error
 
 	cards := make([]domain.StarterSetCard, 0, len(sets))
 	for _, s := range sets {
-		cards = append(cards, toSetCard(s))
+		if s.Status == domain.SetStatusOnSale || s.Status == domain.SetStatusReserved {
+			cards = append(cards, toSetCard(s))
+		}
 	}
 	return cards, nil
 }

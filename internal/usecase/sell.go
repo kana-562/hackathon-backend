@@ -288,7 +288,25 @@ func (u *sellUsecase) UpdateDraft(userID, draftID int64, req domain.UpdateDraftR
 	draft.StartableSummary = req.StartableSummary
 	draft.PreviousOwnerNote = req.PreviousOwnerNote
 
-	return u.setRepo.Update(draft)
+	if err := u.setRepo.Update(draft); err != nil {
+		return err
+	}
+
+	// Update items if provided
+	if len(req.Items) > 0 {
+		_ = u.setRepo.DeleteItems(draftID)
+		for _, item := range req.Items {
+			_ = u.setRepo.AddItem(&domain.SetItem{
+				StarterSetID:   draftID,
+				Name:           item.Name,
+				ConditionLabel: item.ConditionLabel,
+				Quantity:       item.Quantity,
+				IsEssential:    item.IsEssential,
+				Note:           item.Note,
+			})
+		}
+	}
+	return nil
 }
 
 func (u *sellUsecase) PublishDraft(userID, draftID int64) error {

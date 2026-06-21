@@ -307,7 +307,12 @@ func (r *setRepository) Update(set *domain.StarterSet) error {
 }
 
 func (r *setRepository) UpdateStatus(id int64, status string) error {
-	_, err := r.db.Exec(`UPDATE starter_sets SET status=?, updated_at=? WHERE id=?`, status, time.Now(), id)
+	now := time.Now()
+	if status == "on_sale" {
+		_, err := r.db.Exec(`UPDATE starter_sets SET status=?, published_at=?, updated_at=? WHERE id=?`, status, now, now, id)
+		return err
+	}
+	_, err := r.db.Exec(`UPDATE starter_sets SET status=?, updated_at=? WHERE id=?`, status, now, id)
 	return err
 }
 
