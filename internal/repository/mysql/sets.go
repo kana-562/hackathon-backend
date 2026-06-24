@@ -23,7 +23,7 @@ func (r *setRepository) FindAll(filter repository.SetFilter) ([]domain.StarterSe
 		SELECT s.id, s.seller_id, s.hobby_id, s.category_id, s.title, s.description, s.price,
 		       s.status, s.beginner_score, s.readiness_score, s.value_score, s.estimated_new_price,
 		       s.previous_owner_note, s.startable_summary, s.published_at, s.created_at, s.updated_at,
-		       h.name AS hobby_name, hc.name AS category_name,
+		       COALESCE(h.name, '') AS hobby_name, COALESCE(hc.name, '') AS category_name,
 		       COALESCE(si.image_url, '') AS image_url
 		FROM starter_sets s
 		LEFT JOIN hobbies h ON s.hobby_id = h.id

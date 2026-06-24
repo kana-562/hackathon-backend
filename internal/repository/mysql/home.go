@@ -17,7 +17,7 @@ func NewCategoryRepository(db *sql.DB) repository.CategoryRepository {
 
 func (r *categoryRepository) FindAll() ([]domain.HobbyCategory, error) {
 	rows, err := r.db.Query(
-		`SELECT id, name, slug, description, icon_name, sort_order, created_at FROM hobby_categories ORDER BY sort_order ASC`,
+		`SELECT id, name, COALESCE(slug,''), COALESCE(description,''), COALESCE(icon_name,''), sort_order, created_at FROM hobby_categories ORDER BY sort_order ASC`,
 	)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (r *categoryRepository) FindAll() ([]domain.HobbyCategory, error) {
 func (r *categoryRepository) FindByID(id int64) (*domain.HobbyCategory, error) {
 	c := &domain.HobbyCategory{}
 	err := r.db.QueryRow(
-		`SELECT id, name, slug, description, icon_name, sort_order, created_at FROM hobby_categories WHERE id = ?`, id,
+		`SELECT id, name, COALESCE(slug,''), COALESCE(description,''), COALESCE(icon_name,''), sort_order, created_at FROM hobby_categories WHERE id = ?`, id,
 	).Scan(&c.ID, &c.Name, &c.Slug, &c.Description, &c.IconName, &c.SortOrder, &c.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
