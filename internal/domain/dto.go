@@ -150,6 +150,7 @@ type UpdateDraftRequest struct {
 	StartableSummary  string       `json:"startableSummary"`
 	PreviousOwnerNote string       `json:"previousOwnerNote"`
 	Items             []SetItemDTO `json:"items"`
+	ImageURL          string       `json:"imageUrl"`
 }
 
 // Transaction

@@ -188,6 +188,7 @@ func (r *MockSetRepository) FindFavorites(_ int64) ([]domain.StarterSet, error) 
 }
 
 func (r *MockSetRepository) AddImage(_ *domain.SetImage) error            { return nil }
+func (r *MockSetRepository) DeleteImages(_ int64) error                   { return nil }
 func (r *MockSetRepository) AddItem(_ *domain.SetItem) error              { return nil }
 func (r *MockSetRepository) AddRecommendedItem(_ *domain.RecommendedItem) error { return nil }
 func (r *MockSetRepository) DeleteItems(_ int64) error                    { return nil }

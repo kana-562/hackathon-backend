@@ -40,6 +40,7 @@ type SetRepository interface {
 	FindBySeller(sellerID int64) ([]domain.StarterSet, error)
 	FindFavorites(userID int64) ([]domain.StarterSet, error)
 	AddImage(image *domain.SetImage) error
+	DeleteImages(setID int64) error
 	AddItem(item *domain.SetItem) error
 	AddRecommendedItem(item *domain.RecommendedItem) error
 	DeleteItems(setID int64) error

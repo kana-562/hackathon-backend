@@ -381,6 +381,11 @@ func (r *setRepository) AddImage(image *domain.SetImage) error {
 	return err
 }
 
+func (r *setRepository) DeleteImages(setID int64) error {
+	_, err := r.db.Exec(`DELETE FROM set_images WHERE starter_set_id = ?`, setID)
+	return err
+}
+
 func (r *setRepository) AddItem(item *domain.SetItem) error {
 	now := time.Now()
 	_, err := r.db.Exec(

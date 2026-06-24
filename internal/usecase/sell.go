@@ -306,6 +306,16 @@ func (u *sellUsecase) UpdateDraft(userID, draftID int64, req domain.UpdateDraftR
 			})
 		}
 	}
+
+	// Update image if provided
+	if req.ImageURL != "" {
+		_ = u.setRepo.DeleteImages(draftID)
+		_ = u.setRepo.AddImage(&domain.SetImage{
+			StarterSetID: draftID,
+			ImageURL:     req.ImageURL,
+			SortOrder:    0,
+		})
+	}
 	return nil
 }
 
