@@ -85,7 +85,7 @@ func (r *setRepository) FindAll(filter repository.SetFilter) ([]domain.StarterSe
 	case "readiness":
 		query += " ORDER BY s.readiness_score DESC"
 	default:
-		query += " ORDER BY s.published_at DESC, s.created_at DESC"
+		query += " ORDER BY COALESCE(s.published_at, s.created_at) DESC"
 	}
 
 	if filter.Limit > 0 {
